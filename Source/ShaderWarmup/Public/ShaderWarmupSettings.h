@@ -1,0 +1,69 @@
+#pragma once
+
+#include "Engine/DeveloperSettings.h"
+#include "ShaderWarmupSettings.generated.h"
+
+class UShaderWarmupWidget;
+
+/**
+ * Project Settings > Plugins > Shader Warmup.
+ * The only page students need: pick the level to open afterwards and (optionally) your own screen widget.
+ */
+UCLASS(Config = Game, DefaultConfig, meta = (DisplayName = "Shader Warmup"))
+class SHADERWARMUP_API UShaderWarmupSettings : public UDeveloperSettings
+{
+	GENERATED_BODY()
+
+public:
+	UShaderWarmupSettings();
+
+	virtual FName GetCategoryName() const override { return TEXT("Plugins"); }
+
+	/** The level to open once the shaders are ready (usually your main menu). */
+	UPROPERTY(Config, EditAnywhere, Category = "Basics", meta = (AllowedClasses = "/Script/Engine.World"))
+	TSoftObjectPtr<UWorld> NextLevel;
+
+	/** The screen to show. Make your own Widget Blueprint with "Shader Warmup Widget" as its parent class and pick it here. */
+	UPROPERTY(Config, EditAnywhere, Category = "Basics")
+	TSoftClassPtr<UShaderWarmupWidget> WidgetClass;
+
+	/** Content folders whose materials and effects are loaded so their shaders compile. /Game = your whole project. */
+	UPROPERTY(Config, EditAnywhere, Category = "Warm-up", meta = (ContentDir))
+	TArray<FDirectoryPath> FoldersToWarmUp;
+
+	/** Also load Niagara systems and Cascade particle systems (their materials compile too). */
+	UPROPERTY(Config, EditAnywhere, Category = "Warm-up")
+	bool bIncludeParticleEffects = true;
+
+	/** The screen stays up at least this long, so it doesn't just flash. */
+	UPROPERTY(Config, EditAnywhere, Category = "Timing", meta = (ClampMin = "0", Units = "s"))
+	float MinSeconds = 1.f;
+
+	/** Safety net: move on after this long even if shaders are still compiling. */
+	UPROPERTY(Config, EditAnywhere, Category = "Timing", meta = (ClampMin = "1", Units = "s"))
+	float MaxSeconds = 300.f;
+
+	/** Nothing may be left to compile for this long before the warm-up counts as done (new jobs can still trickle in). */
+	UPROPERTY(Config, EditAnywhere, Category = "Timing", meta = (ClampMin = "0", Units = "s"))
+	float QuietSeconds = 0.5f;
+
+	/** How long the full bar stays on screen before the next level opens. */
+	UPROPERTY(Config, EditAnywhere, Category = "Timing", meta = (ClampMin = "0", Units = "s"))
+	float FinishedHoldSeconds = 0.25f;
+
+	/** Share of the progress bar used by asset loading; the rest is shader compiling. */
+	UPROPERTY(Config, EditAnywhere, Category = "Advanced", meta = (ClampMin = "0", ClampMax = "1"))
+	float LoadingShare = 0.25f;
+
+	/** Compile pipeline states (PSOs) as fast as possible while the screen is up. */
+	UPROPERTY(Config, EditAnywhere, Category = "Advanced")
+	bool bFastPipelineCompile = true;
+
+	/** When you press Play in the editor on the warm-up map, go straight to the next level (the editor already has its shaders). */
+	UPROPERTY(Config, EditAnywhere, Category = "Advanced")
+	bool bSkipInPlayInEditor = false;
+
+	/** Write progress lines to the log (LogShaderWarmup). */
+	UPROPERTY(Config, EditAnywhere, Category = "Advanced")
+	bool bVerboseLog = false;
+};

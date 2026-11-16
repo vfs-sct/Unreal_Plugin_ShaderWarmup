@@ -1,0 +1,21 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "Shader Warmup",
+	"Description": "Shows a boot screen that loads every material and effect and waits until their shaders are compiled, then opens your first level. Restyle the screen in UMG.",
+	"Category": "Rendering",
+	"CreatedBy": "",
+	"CreatedByURL": "",
+	"DocsURL": "",
+	"CanContainContent": true,
+	"IsBetaVersion": false,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "ShaderWarmup",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	]
+}
