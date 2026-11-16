@@ -8,7 +8,7 @@ You can restyle the screen in the UMG Designer without writing any code.
 
 ---
 
-## 1. Install (5 minutes)
+## 1. Install
 
 You need a **C++ project** (if yours is Blueprint-only, add any C++ class once: *Tools > New C++ Class*) and
 Visual Studio with the "Game development with C++" workload.
