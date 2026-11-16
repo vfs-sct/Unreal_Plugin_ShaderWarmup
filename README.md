@@ -42,7 +42,7 @@ never overwrite your screen.
 
 Three examples are in `ShaderWarmup Content/Examples` (Card, Tips, Bold). Start from whichever is closest to what you want.
 
-### Level 1: the Details panel (no Designer work)
+### The Details panel (no Designer work)
 
 In the Widget Blueprint, click the **top entry in the Hierarchy** (the widget's own name). Under **Shader Warmup** in
 the Details panel:
@@ -57,7 +57,7 @@ the Details panel:
 | Text > ... | Every message. `{Percent}`, `{Left}` (shaders left) and `{Assets}` are filled in for you |
 | Tips | Lines that rotate in `TipText` every *Seconds Per Tip* |
 
-### Level 2: the Designer
+### The Designer
 
 Move, resize, recolour, change fonts, add images or anything else. The plugin finds these widgets **by name** and
 keeps them updated:
@@ -73,7 +73,7 @@ keeps them updated:
 
 All of them are optional. Delete one and nothing breaks; rename one and it simply stops updating.
 
-### Level 3: your own Widget Blueprint
+### Your own Widget Blueprint
 
 *Add > User Interface > Widget Blueprint*, then pick **Shader Warmup Widget** as the parent class. Use the names
 above, and/or implement these events in the Graph:
