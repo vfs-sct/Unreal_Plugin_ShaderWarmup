@@ -8,11 +8,24 @@ first time something new appears on screen.
 
 You can restyle the screen in the UMG Designer without writing any code.
 
+### How the game starts
+
+1. The game opens **`L_ShaderWarmup`** first (your project's **Game Default Map**).
+2. When the shaders are ready, it opens your **Next Level** (Project Settings > Plugins > Shader Warmup), usually
+   the level that was your Game Default Map before: your main menu or first level.
+
+Unreal's own **Transition Map** setting (Maps & Modes) isn't used for this; leave it as it is.
+
 ---
 
 ## 1. Install
 
-You need a **C++ project** (if yours is Blueprint-only, add any C++ class once: *Tools > New C++ Class*) and
+**Easiest: VFS Unreal Project Build Tool > Import Plugin > Shader Warmup.** It copies the plugin into your project,
+builds it, and does steps 4 and 5 below for you: your current Game Default Map becomes the **Next Level**, then
+Game Default Map is set to `L_ShaderWarmup`. (If your project has no Game Default Map of its own, it changes
+neither and lists what to set.)
+
+To install it by hand instead: you need a **C++ project** (if yours is Blueprint-only, add any C++ class once: *Tools > New C++ Class*) and
 Visual Studio with the "Game development with C++" workload.
 
 1. Close the editor.
