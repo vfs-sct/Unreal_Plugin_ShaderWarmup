@@ -55,8 +55,6 @@ Open `WBP_ShaderWarmup_Default` (in the plugin's content), or better: **duplicat
 first, then pick your copy in *Project Settings > Plugins > Shader Warmup > Widget Class*. Plugin updates will then
 never overwrite your screen.
 
-Three examples are in `ShaderWarmup Content/Examples` (Card, Tips, Bold). Start from whichever is closest to what you want.
-
 ### The Details panel (no Designer work)
 
 In the Widget Blueprint, click the **top entry in the Hierarchy** (the widget's own name). Under **Shader Warmup** in
