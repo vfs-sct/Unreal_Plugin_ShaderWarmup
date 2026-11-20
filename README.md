@@ -64,7 +64,8 @@ the Details panel:
 
 | Setting | What it does |
 |---|---|
-| Title | Text of `TitleText` |
+| Title Image | A texture or material for `TitleImage` (e.g. your game's logo). Empty = no title in the game |
+| Title Image Height | Height of `TitleImage`; the width follows the picture's shape (0 = the Designer's size) |
 | Background Image | A texture or material for `Background` |
 | Bar Color | Fill colour of `ProgressBar` (tick the box to use it) |
 | Bar Smoothing | How smoothly the bar slides (0 = jumps) |
@@ -82,7 +83,7 @@ keeps them updated:
 | `ProgressBar` | Progress Bar | 0 → 100% |
 | `PercentText` | Text | "64%" |
 | `StatusText` | Text | "Compiling shaders… 1,204 left" |
-| `TitleText` | Text | your Title |
+| `TitleImage` | Image | your Title Image (a white box in the Designer until you pick one) |
 | `TipText` | Text | the Tips |
 | `Background` | Image | your Background Image |
 

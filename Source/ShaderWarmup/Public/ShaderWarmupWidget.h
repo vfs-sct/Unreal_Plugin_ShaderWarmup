@@ -11,11 +11,11 @@ class UTextBlock;
 /**
  * Parent class for the warm-up screen. You never need to write graph code:
  *
- *  1. Details panel: change Title, Background Image, Bar Color, Tips and the texts under "Shader Warmup".
+ *  1. Details panel: change Title Image, Background Image, Bar Color, Tips and the texts under "Shader Warmup".
  *  2. Designer: move and restyle anything. Widgets with these exact names update by themselves
  *     (all optional, delete what you don't want):
  *       ProgressBar (Progress Bar)   PercentText (Text)   StatusText (Text)
- *       TitleText (Text)             TipText (Text)       Background (Image)
+ *       TitleImage (Image)           TipText (Text)       Background (Image)
  *  3. Your own animations: implement the events "On Warmup Progress" / "On Warmup Finished" in the graph.
  */
 UCLASS(Abstract, Blueprintable)
@@ -26,9 +26,16 @@ class SHADERWARMUP_API UShaderWarmupWidget : public UUserWidget
 public:
 	// ---- Look (Details panel) ----
 
-	/** Shown in the widget named TitleText. Leave empty to keep whatever the Designer says. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Shader Warmup|Look")
-	FText Title;
+	/**
+	 * Shown in the widget named TitleImage (e.g. your game's logo). A texture or a material.
+	 * Leave empty to keep the Designer's brush; with no picture at all, TitleImage is hidden in the game.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Shader Warmup|Look", meta = (DisplayName = "Title Image", AllowedClasses = "/Script/Engine.Texture,/Script/Engine.MaterialInterface"))
+	TObjectPtr<UObject> TitleImageAsset;
+
+	/** Height of TitleImage. The width follows the picture's shape. 0 = use the Designer's image size. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Shader Warmup|Look", meta = (ClampMin = "0"))
+	float TitleImageHeight = 120.f;
 
 	/** Shown in the widget named Background. A texture or a material. Leave empty to keep the Designer's brush. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Shader Warmup|Look", meta = (AllowedClasses = "/Script/Engine.Texture,/Script/Engine.MaterialInterface"))
@@ -112,7 +119,7 @@ protected:
 	TObjectPtr<UTextBlock> StatusText;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Shader Warmup", meta = (BindWidgetOptional))
-	TObjectPtr<UTextBlock> TitleText;
+	TObjectPtr<UImage> TitleImage;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Shader Warmup", meta = (BindWidgetOptional))
 	TObjectPtr<UTextBlock> TipText;

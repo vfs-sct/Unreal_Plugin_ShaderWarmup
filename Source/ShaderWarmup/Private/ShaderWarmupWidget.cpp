@@ -4,6 +4,7 @@
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
 #include "Engine/GameInstance.h"
+#include "Engine/Texture.h"
 
 #define LOCTEXT_NAMESPACE "ShaderWarmup"
 
@@ -117,9 +118,36 @@ void UShaderWarmupWidget::HandleFinished()
 
 void UShaderWarmupWidget::ApplyLook()
 {
-	if (TitleText && !Title.IsEmpty())
+	if (TitleImage)
 	{
-		TitleText->SetText(Title);
+		FSlateBrush Brush = TitleImage->GetBrush();
+		if (TitleImageAsset)
+		{
+			Brush.SetResourceObject(TitleImageAsset);
+		}
+		if (TitleImageHeight > 0.f)
+		{
+			// Keep the picture's shape: the height is fixed, the width follows.
+			const UTexture* Texture = Cast<UTexture>(Brush.GetResourceObject());
+			const float TexWidth = Texture ? Texture->GetSurfaceWidth() : 0.f;
+			const float TexHeight = Texture ? Texture->GetSurfaceHeight() : 0.f;
+			float Aspect = 4.f; // no picture yet: a wide placeholder box in the Designer
+			if (TexWidth > 0.f && TexHeight > 0.f)
+			{
+				Aspect = TexWidth / TexHeight;
+			}
+			else if (Brush.GetResourceObject() && Brush.ImageSize.X > 0.f && Brush.ImageSize.Y > 0.f)
+			{
+				Aspect = Brush.ImageSize.X / Brush.ImageSize.Y; // a material: keep the Designer's shape
+			}
+			Brush.ImageSize = FVector2D(TitleImageHeight * Aspect, TitleImageHeight);
+		}
+		TitleImage->SetBrush(Brush);
+		if (!IsDesignTime() && !TitleImage->GetBrush().GetResourceObject())
+		{
+			// No picture chosen: hide it instead of drawing a white box. (The Designer keeps showing the slot.)
+			TitleImage->SetVisibility(ESlateVisibility::Collapsed);
+		}
 	}
 	if (Background && BackgroundImage)
 	{
