@@ -43,6 +43,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Shader Warmup")
 	void CancelWarmup();
 
+	/** Called when the warm-up screen appears. Only then is the full bar held (Finished Hold Seconds) at the end. */
+	void NoteScreenShown() { bScreenShown = true; }
+
 	UFUNCTION(BlueprintPure, Category = "Shader Warmup")
 	bool IsRunning() const { return Phase != EShaderWarmupPhase::NotStarted && Phase != EShaderWarmupPhase::Finished; }
 
@@ -83,7 +86,9 @@ public:
 private:
 	bool Tick(float DeltaTime);
 	void BeginLoading();
-	void Finish();
+	void Finish(bool bRememberResult);
+	static FString CompiledMarkerPath();
+	static FString CompiledMarkerKey();
 	void OpenNextLevel();
 	void ReleaseAssets();
 	void SetFastMode(bool bFast);
@@ -103,4 +108,6 @@ private:
 	int32 ShadersRemaining = 0;
 	int32 MostShadersSeen = 0;
 	int32 AssetCount = 0;
+	float CompilingSeconds = 0.f; // total time with shaders / PSOs left to compile
+	bool bScreenShown = false;
 };

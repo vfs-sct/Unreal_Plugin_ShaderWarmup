@@ -29,16 +29,16 @@ void AShaderWarmupGameMode::BeginPlay()
 		Warmup->StartWarmup(bOpenNextLevelWhenDone);
 	}
 
-	// With nothing to compile the warm-up is done in a fraction of a second and the screen never appears.
-	// Otherwise it appears after Show Screen After, or later if work only turns up later (checked every 0.1 s).
-	const float Delay = GetDefault<UShaderWarmupSettings>()->ShowScreenAfterSeconds;
-	if (Delay <= 0.f)
+	// The screen only appears for real compiling (checked every 0.1 s), so a launch with everything compiled
+	// goes straight to Next Level without it.
+	CompilingSeconds = 0.f;
+	if (GetDefault<UShaderWarmupSettings>()->ShowScreenAfterSeconds <= 0.f)
 	{
 		ShowScreen();
 	}
 	else
 	{
-		GetWorldTimerManager().SetTimer(ShowScreenTimer, this, &AShaderWarmupGameMode::ShowScreenIfBusy, 0.1f, true, Delay);
+		GetWorldTimerManager().SetTimer(ShowScreenTimer, this, &AShaderWarmupGameMode::ShowScreenIfBusy, 0.1f, true);
 	}
 }
 
@@ -50,9 +50,10 @@ void AShaderWarmupGameMode::ShowScreenIfBusy()
 		GetWorldTimerManager().ClearTimer(ShowScreenTimer); // finished (or never started): no screen
 		return;
 	}
-	// Still scanning / loading, or shaders left. (Compiling with 0 left = only the final quiet wait.)
-	const bool bBusy = Warmup->GetPhase() != EShaderWarmupPhase::CompilingShaders || Warmup->GetShadersRemaining() > 0;
-	if (bBusy)
+	// Loading doesn't count, only shaders / PSOs left to compile, and it must last: quick checks of PSOs the
+	// graphics driver already has come and go within a moment.
+	CompilingSeconds = Warmup->GetShadersRemaining() > 0 ? CompilingSeconds + 0.1f : 0.f;
+	if (CompilingSeconds >= GetDefault<UShaderWarmupSettings>()->ShowScreenAfterSeconds)
 	{
 		GetWorldTimerManager().ClearTimer(ShowScreenTimer);
 		ShowScreen();
@@ -68,6 +69,10 @@ void AShaderWarmupGameMode::ShowScreen()
 		if (UUserWidget* Screen = CreateWidget<UUserWidget>(PC, WidgetClass))
 		{
 			Screen->AddToViewport();
+			if (UShaderWarmupSubsystem* Warmup = GetGameInstance()->GetSubsystem<UShaderWarmupSubsystem>())
+			{
+				Warmup->NoteScreenShown();
+			}
 			UE_LOG(LogShaderWarmup, Display, TEXT("Shader warm-up: showing the screen (%s)"), *WidgetClass->GetName());
 		}
 	}

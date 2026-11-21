@@ -5,14 +5,50 @@
 #include "Engine/GameInstance.h"
 #include "Engine/StreamableManager.h"
 #include "Engine/World.h"
+#include "HAL/FileManager.h"
+#include "Misc/App.h"
 #include "Kismet/GameplayStatics.h"
 #include "Misc/CommandLine.h"
+#include "Misc/EngineVersion.h"
+#include "Misc/FileHelper.h"
+#include "Misc/Paths.h"
 #include "PipelineStateCache.h"
 #include "ShaderCompiler.h"
 #include "ShaderPipelineCache.h"
+#include "DynamicRHI.h"
+#include "RHIGlobals.h"
 #include "ShaderWarmupSettings.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogShaderWarmup, Log, All);
+
+// Less compiling than this in total counts as "nothing to compile": the graphics driver's quick checks of PSOs it
+// already has.
+static constexpr float NothingToCompileSeconds = 1.f;
+
+FString UShaderWarmupSubsystem::CompiledMarkerPath()
+{
+	return FPaths::ProjectSavedDir() / TEXT("ShaderWarmup") / TEXT("AlreadyCompiled.txt");
+}
+
+FString UShaderWarmupSubsystem::CompiledMarkerKey()
+{
+	// Changes with a new build (exe and content files), a new engine, another graphics card, driver or graphics API.
+	FString Key = FString::Printf(TEXT("%s|%s|%s|%s|%u|%u|%s"),
+		FApp::GetBuildVersion(), *FEngineVersion::Current().ToString(), GDynamicRHI ? GDynamicRHI->GetName() : TEXT(""),
+		*GRHIAdapterName, GRHIVendorId, GRHIDeviceId, *GRHIAdapterUserDriverVersion);
+	IFileManager& Files = IFileManager::Get();
+	Key += FString::Printf(TEXT("|exe %lld"), Files.GetTimeStamp(FPlatformProcess::ExecutablePath()).GetTicks());
+	const FString PaksDir = FPaths::ProjectContentDir() / TEXT("Paks");
+	TArray<FString> Paks;
+	Files.FindFiles(Paks, *PaksDir, nullptr);
+	Paks.Sort();
+	for (const FString& Pak : Paks)
+	{
+		const FString Path = PaksDir / Pak;
+		Key += FString::Printf(TEXT("|%s %lld %lld"), *Pak, Files.FileSize(*Path), Files.GetTimeStamp(*Path).GetTicks());
+	}
+	return Key;
+}
 
 int32 UShaderWarmupSubsystem::GetShaderCompilesRemaining()
 {
@@ -57,6 +93,8 @@ void UShaderWarmupSubsystem::StartWarmup(bool bOpenNextLevelWhenDone)
 	MostShadersSeen = 0;
 	AssetCount = 0;
 	HoldSecondsLeft = 0.f;
+	CompilingSeconds = 0.f;
+	bScreenShown = false;
 	Phase = EShaderWarmupPhase::ScanningAssets;
 
 	if (!TickHandle.IsValid())
@@ -70,9 +108,21 @@ void UShaderWarmupSubsystem::StartWarmup(bool bOpenNextLevelWhenDone)
 	if (bPIESkip || FParse::Param(FCommandLine::Get(), TEXT("SkipShaderWarmup")))
 	{
 		Log(TEXT("skipped"));
-		Finish();
+		Finish(false);
 		return;
 	}
+
+#if !WITH_EDITOR
+	// The last launch had nothing to compile and nothing has changed since: go straight on.
+	FString LastKey;
+	if (Settings->bSkipWhenAlreadyCompiled && FFileHelper::LoadFileToString(LastKey, *CompiledMarkerPath())
+		&& LastKey == CompiledMarkerKey())
+	{
+		Log(TEXT("already compiled on this PC (nothing to compile last time), skipped"));
+		Finish(false);
+		return;
+	}
+#endif
 
 	if (Settings->bFastPipelineCompile)
 	{
@@ -166,7 +216,7 @@ bool UShaderWarmupSubsystem::Tick(float DeltaTime)
 	{
 		UE_LOG(LogShaderWarmup, Warning, TEXT("Shader warm-up: gave up after %.0f s (Max Seconds), %d shaders still queued"),
 			ElapsedSeconds, ShadersRemaining);
-		Finish();
+		Finish(true);
 		return true;
 	}
 
@@ -186,6 +236,10 @@ bool UShaderWarmupSubsystem::Tick(float DeltaTime)
 
 	ShadersRemaining = GetShaderCompilesRemaining() + GetPipelineCompilesRemaining();
 	MostShadersSeen = FMath::Max(MostShadersSeen, ShadersRemaining);
+	if (ShadersRemaining > 0)
+	{
+		CompilingSeconds += DeltaTime;
+	}
 
 	float CompileFraction = MostShadersSeen > 0 ? 1.f - (float)ShadersRemaining / (float)MostShadersSeen : (bLoaded ? 1.f : 0.f);
 	if (!bLoaded)
@@ -213,20 +267,36 @@ bool UShaderWarmupSubsystem::Tick(float DeltaTime)
 
 	if (QuietTime >= Settings->QuietSeconds && ElapsedSeconds >= Settings->MinSeconds)
 	{
-		Finish();
+		Finish(true);
 	}
 	return true;
 }
 
-void UShaderWarmupSubsystem::Finish()
+void UShaderWarmupSubsystem::Finish(bool bRememberResult)
 {
-	UE_LOG(LogShaderWarmup, Display, TEXT("Shader warm-up: done after %.1f s, %d assets, most shader jobs seen %d"),
-		ElapsedSeconds, AssetCount, MostShadersSeen);
+	UE_LOG(LogShaderWarmup, Display, TEXT("Shader warm-up: done after %.1f s, %d assets, most shader jobs seen %d, compiling %.1f s"),
+		ElapsedSeconds, AssetCount, MostShadersSeen, CompilingSeconds);
+
+#if !WITH_EDITOR
+	// Remember whether this launch had anything to compile, so the next one can skip the warm-up.
+	if (bRememberResult)
+	{
+		if (CompilingSeconds < NothingToCompileSeconds)
+		{
+			FFileHelper::SaveStringToFile(CompiledMarkerKey(), *CompiledMarkerPath());
+		}
+		else
+		{
+			IFileManager::Get().Delete(*CompiledMarkerPath(), false, false, true);
+		}
+	}
+#endif
 
 	Progress = 1.f;
 	ShadersRemaining = 0;
 	Phase = EShaderWarmupPhase::Finished;
-	HoldSecondsLeft = GetDefault<UShaderWarmupSettings>()->FinishedHoldSeconds;
+	// The full bar is only held when there is a screen to show it; otherwise go straight on.
+	HoldSecondsLeft = bScreenShown ? GetDefault<UShaderWarmupSettings>()->FinishedHoldSeconds : 0.f;
 	ReleaseAssets();
 	SetFastMode(false);
 

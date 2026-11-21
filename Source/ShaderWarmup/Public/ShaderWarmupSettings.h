@@ -39,12 +39,20 @@ public:
 	bool bIncludeParticleEffects = true;
 
 	/**
-	 * The screen only appears once the warm-up has been running this long and still has work (assets loading or
-	 * shaders compiling). A launch with nothing to compile goes straight to Next Level without showing it.
-	 * 0 = always show the screen.
+	 * Packaged games only: if the last launch on this PC had nothing to compile, and the game build, graphics card,
+	 * driver and graphics API are the same, skip the warm-up and open Next Level straight away.
+	 * (Editor and Standalone runs always warm up.)
+	 */
+	UPROPERTY(Config, EditAnywhere, Category = "Warm-up")
+	bool bSkipWhenAlreadyCompiled = true;
+
+	/**
+	 * The screen only appears once shaders / PSOs have been compiling non-stop for this long. Loading alone never
+	 * shows it, and neither do the graphics driver's quick checks of already-compiled PSOs, so a launch with
+	 * everything compiled goes straight to Next Level without it. 0 = always show the screen.
 	 */
 	UPROPERTY(Config, EditAnywhere, Category = "Timing", meta = (ClampMin = "0", Units = "s"))
-	float ShowScreenAfterSeconds = 0.1f;
+	float ShowScreenAfterSeconds = 1.f;
 
 	/** The warm-up runs at least this long. */
 	UPROPERTY(Config, EditAnywhere, Category = "Timing", meta = (ClampMin = "0", Units = "s"))

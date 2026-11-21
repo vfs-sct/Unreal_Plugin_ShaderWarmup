@@ -13,9 +13,11 @@ You can restyle the screen in the UMG Designer without writing any code.
 1. The game opens **`L_ShaderWarmup`** first (your project's **Game Default Map**).
 2. When the shaders are ready, it opens your **Next Level** (Project Settings > Plugins > Shader Warmup), usually
    the level that was your Game Default Map before: your main menu or first level.
-3. The warm-up screen only appears when there's work to wait for (assets loading or shaders compiling after
-   *Show Screen After*, 0.1 s). When there's nothing to compile, the game goes straight to Next Level without
-   showing it.
+3. The warm-up screen only appears when shaders have been compiling for a while (*Show Screen After*, 1 s).
+   When everything is already compiled, nothing is shown and the game goes straight to Next Level.
+4. A packaged game remembers when a launch had nothing to compile. The next launch on that PC skips the warm-up
+   and opens Next Level at once, until the game is repackaged or the graphics card or driver changes
+   (*Skip When Already Compiled*).
 
 Unreal's own **Transition Map** setting (Maps & Modes) isn't used for this; leave it as it is.
 
@@ -113,7 +115,8 @@ Then select it in *Project Settings > Shader Warmup > Widget Class*.
 | Widget Class | WBP_ShaderWarmup | The screen |
 | Folders To Warm Up | /Game | Folders whose materials / effects are loaded. Narrow it if your project has huge unused packs. |
 | Include Particle Effects | on | Also load Niagara and Cascade systems |
-| Show Screen After | 0.1 | The screen only appears once the warm-up has run this long and still has work. 0 = always show it |
+| Skip When Already Compiled | on | Packaged games: skip the warm-up when the last launch on this PC had nothing to compile and nothing changed since (new build, graphics card, driver). Editor and Standalone always warm up |
+| Show Screen After | 1 | The screen only appears once shaders have been compiling non-stop this long (loading doesn't count). 0 = always show it |
 | Min Seconds | 0.1 | The warm-up runs at least this long |
 | Max Seconds | 300 | Gives up and moves on after this long |
 | Quiet Seconds | 0.1 | Nothing may be left for this long before it counts as done |
@@ -139,8 +142,8 @@ Get them from **Get Game Instance Subsystem > Shader Warmup Subsystem**:
 - **Editor and Standalone:** materials compile their shaders while they load. The screen shows them loading;
   on a cold cache that can take a while the first time.
 - **Packaged game:** shaders are compiled when you package, so what's left is **PSO** (pipeline state) work for the
-  graphics card. It's slow only on a player's **first launch** (and after a driver update). Later launches have
-  nothing to compile, so the screen doesn't appear.
+  graphics card. It's slow only on a player's **first launch** (and after a driver update). Later launches skip
+  the warm-up and go straight to Next Level.
 - **Global shaders** (the engine's own) compile before the first frame, so a black window right after an engine
   update is normal. No plugin can show a screen there.
 - Only assets in the chosen folders are warmed up. Materials created at runtime (dynamic material instances of those
