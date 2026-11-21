@@ -27,6 +27,9 @@ public:
 	UPROPERTY(Config, EditAnywhere, Category = "Basics")
 	TSoftClassPtr<UShaderWarmupWidget> WidgetClass;
 
+	/** Loads WidgetClass. If it's set but can't be loaded (renamed or deleted), the plugin's own WBP_ShaderWarmup is used instead. */
+	UClass* LoadWidgetClass() const;
+
 	/** Content folders whose materials and effects are loaded so their shaders compile. /Game = your whole project. */
 	UPROPERTY(Config, EditAnywhere, Category = "Warm-up", meta = (ContentDir))
 	TArray<FDirectoryPath> FoldersToWarmUp;

@@ -18,7 +18,7 @@ void AShaderWarmupGameMode::BeginPlay()
 	Super::BeginPlay();
 
 	const UShaderWarmupSettings* Settings = GetDefault<UShaderWarmupSettings>();
-	UClass* WidgetClass = Settings->WidgetClass.LoadSynchronous();
+	UClass* WidgetClass = Settings->LoadWidgetClass();
 	APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0);
 	if (WidgetClass && PC)
 	{

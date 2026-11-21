@@ -51,9 +51,9 @@ Done. Launch the game (Standalone, or a packaged build) and the warm-up screen c
 
 ## 2. Change how it looks
 
-Open `WBP_ShaderWarmup_Default` (in the plugin's content), or better: **duplicate it into your own Content folder**
-first, then pick your copy in *Project Settings > Plugins > Shader Warmup > Widget Class*. Plugin updates will then
-never overwrite your screen.
+Edit `WBP_ShaderWarmup` directly. It's the screen the plugin already uses, so there's nothing else to set up.
+Find it in the Content Browser under `ShaderWarmup Content` (turn on *Settings > Show Plugin Content* if you can't
+see it), open it, change it and save.
 
 ### The Details panel (no Designer work)
 
@@ -106,7 +106,7 @@ Then select it in *Project Settings > Shader Warmup > Widget Class*.
 | Setting | Default | Meaning |
 |---|---|---|
 | Next Level | (none) | Level to open when done. **Set this.** |
-| Widget Class | WBP_ShaderWarmup_Default | The screen |
+| Widget Class | WBP_ShaderWarmup | The screen |
 | Folders To Warm Up | /Game | Folders whose materials / effects are loaded. Narrow it if your project has huge unused packs. |
 | Include Particle Effects | on | Also load Niagara and Cascade systems |
 | Min Seconds | 1 | Screen stays at least this long |
@@ -163,7 +163,7 @@ The warm-up screen counts and compiles that cache automatically.
 | Problem | Fix |
 |---|---|
 | Screen shows, then nothing happens | *Next Level* isn't set. The log says `no Next Level set`. |
-| Black screen, no widget | *Widget Class* is empty or points at a deleted asset. |
+| Black screen, no widget | *Widget Class* is empty. (One that can't be loaded falls back to `WBP_ShaderWarmup`; the log says so.) |
 | Bar sits at 0% for a few seconds in the editor | The editor is still scanning content. It continues by itself. |
 | Plugin content not visible | Content Browser > Settings > *Show Plugin Content*. |
 | "Modules are missing or built with a different engine version" | Click Yes to rebuild (needs Visual Studio). |
