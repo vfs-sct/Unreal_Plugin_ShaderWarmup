@@ -1,10 +1,12 @@
 #pragma once
 
 #include "GameFramework/GameModeBase.h"
+#include "TimerManager.h"
 #include "ShaderWarmupGameMode.generated.h"
 
 /**
- * Game mode of the L_ShaderWarmup map: no pawn, shows the warm-up screen from Project Settings and starts the warm-up.
+ * Game mode of the L_ShaderWarmup map: no pawn, starts the warm-up and shows the warm-up screen from Project Settings
+ * (only once it has run for Show Screen After and still has work).
  * Want the screen in your own boot level instead? Set this as that level's GameMode Override.
  */
 UCLASS()
@@ -21,4 +23,10 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+
+private:
+	void ShowScreen();
+	void ShowScreenIfBusy();
+
+	FTimerHandle ShowScreenTimer;
 };

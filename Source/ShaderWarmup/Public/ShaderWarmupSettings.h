@@ -38,9 +38,17 @@ public:
 	UPROPERTY(Config, EditAnywhere, Category = "Warm-up")
 	bool bIncludeParticleEffects = true;
 
-	/** The screen stays up at least this long, so it doesn't just flash. */
+	/**
+	 * The screen only appears once the warm-up has been running this long and still has work (assets loading or
+	 * shaders compiling). A launch with nothing to compile goes straight to Next Level without showing it.
+	 * 0 = always show the screen.
+	 */
 	UPROPERTY(Config, EditAnywhere, Category = "Timing", meta = (ClampMin = "0", Units = "s"))
-	float MinSeconds = 1.f;
+	float ShowScreenAfterSeconds = 0.1f;
+
+	/** The warm-up runs at least this long. */
+	UPROPERTY(Config, EditAnywhere, Category = "Timing", meta = (ClampMin = "0", Units = "s"))
+	float MinSeconds = 0.1f;
 
 	/** Safety net: move on after this long even if shaders are still compiling. */
 	UPROPERTY(Config, EditAnywhere, Category = "Timing", meta = (ClampMin = "1", Units = "s"))
@@ -48,11 +56,11 @@ public:
 
 	/** Nothing may be left to compile for this long before the warm-up counts as done (new jobs can still trickle in). */
 	UPROPERTY(Config, EditAnywhere, Category = "Timing", meta = (ClampMin = "0", Units = "s"))
-	float QuietSeconds = 0.5f;
+	float QuietSeconds = 0.1f;
 
 	/** How long the full bar stays on screen before the next level opens. */
 	UPROPERTY(Config, EditAnywhere, Category = "Timing", meta = (ClampMin = "0", Units = "s"))
-	float FinishedHoldSeconds = 0.25f;
+	float FinishedHoldSeconds = 0.1f;
 
 	/** Share of the progress bar used by asset loading; the rest is shader compiling. */
 	UPROPERTY(Config, EditAnywhere, Category = "Advanced", meta = (ClampMin = "0", ClampMax = "1"))
