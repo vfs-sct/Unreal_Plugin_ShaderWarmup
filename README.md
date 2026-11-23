@@ -25,12 +25,24 @@ Unreal's own **Transition Map** setting (Maps & Modes) isn't used for this; leav
 
 ## 1. Install
 
-**Easiest: VFS Unreal Project Build Tool > Import Plugin > Shader Warmup.** It copies the plugin into your project,
-builds it, and does steps 4 and 5 below for you: your current Game Default Map becomes the **Next Level**, then
-Game Default Map is set to `L_ShaderWarmup`. (If your project has no Game Default Map of its own, it changes
-neither and lists what to set.)
+### With the VFS Unreal Project Build Tool (recommended)
 
-To install it by hand instead: you need a **C++ project** (if yours is Blueprint-only, add any C++ class once: *Tools > New C++ Class*) and
+1. Open the [VFS Unreal Project Build Tool](https://github.com/vfs-sct/VFS_Unreal_Project_Renamer) and pick your
+   project's `.uproject` under **Project**.
+2. **Action:** Import Plugin. **Plugin:** Shader Warmup. **On Finish Success:** Build Solution.
+3. Click **Import** and confirm.
+
+That's all. The tool downloads the plugin into `Plugins/ShaderWarmup`, regenerates the Visual Studio project files,
+builds, and opens the editor, so you skip every step of the manual install below, including the map settings:
+your current Game Default Map becomes the **Next Level**, then Game Default Map is set to `L_ShaderWarmup`. (If
+your project has no Game Default Map of its own, it changes neither and lists what to set.) Check the yellow
+**CHECK IN UNREAL EDITOR** list at the end of the log, then launch in Standalone to see the warm-up screen.
+
+The project must be a C++ project (if yours is Blueprint-only, add any C++ class once: *Tools > New C++ Class*).
+
+### By hand
+
+You need a **C++ project** (if yours is Blueprint-only, add any C++ class once: *Tools > New C++ Class*) and
 Visual Studio with the "Game development with C++" workload.
 
 1. Close the editor.
